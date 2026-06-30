@@ -27,3 +27,11 @@ def get_transactions_by_user_id(
         stmt = stmt.limit(limit)
 
     return db.execute(stmt).scalars().all()
+    
+
+def create_new_transaction(db: Session, transaction_data):
+    new_transaction = Transactions(**transaction_data)
+    db.add(new_transaction)
+    db.commit()
+    db.refresh(new_transaction)
+    return new_transaction    

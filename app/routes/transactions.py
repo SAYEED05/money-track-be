@@ -2,9 +2,13 @@ from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
 from typing import Optional
 
-from app.crud import get_all_transactions, get_transactions_by_user_id
+from app.crud import get_all_transactions, get_transactions_by_user_id, create_new_transaction
 from app.database.database import get_db
-from app.schemas.transaction import TransactionListResponse
+from app.schemas.transaction import (
+    TransactionCreateRequest,
+    TransactionCreateResponse,
+    TransactionListResponse,
+)
 
 router = APIRouter(
     prefix="/api/v1/transactions",
@@ -36,3 +40,15 @@ def get_transactions_for_user(
 ):
     transactions = get_transactions_by_user_id(db, user_id=user_id, skip=skip, limit=limit)
     return {"transactions": transactions}
+
+
+@router.post(
+    "/create",
+    response_model=TransactionCreateResponse,
+)
+def create_transaction(
+    transaction_data: TransactionCreateRequest,
+    db: Session = Depends(get_db),
+):
+    transaction = create_new_transaction(db, transaction_data.model_dump())
+    return {"transaction": transaction}

@@ -35,3 +35,21 @@ class TransactionResponse(BaseModel):
 
 class TransactionListResponse(BaseModel):
     transactions: list[TransactionResponse]
+
+
+class TransactionCreateRequest(BaseModel):
+    user_id: int
+    amount: Decimal
+    currency: str
+    direction: str
+    account_name: str
+    transaction_date: datetime
+    source: str
+    counter_party: Optional[str] = None
+    category: Optional[str] = None
+    description: Optional[str] = None
+    email_import_id: Optional[int] = None
+
+
+class TransactionCreateResponse(BaseModel):
+    transaction: TransactionResponse
