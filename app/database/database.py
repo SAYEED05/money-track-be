@@ -6,7 +6,7 @@ from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 from sqlalchemy.orm import DeclarativeBase
 
 
-load_dotenv(dotenv_path=Path(__file__).resolve().parents[2] / '.env')
+load_dotenv(dotenv_path=Path(__file__).resolve().parents[2] / '.env', override=True)
 
 
 db_url = os.getenv('DB_URL')
