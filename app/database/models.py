@@ -2,6 +2,7 @@ from typing import Optional
 import datetime
 import decimal
 
+from fastapi_users.db import SQLAlchemyBaseUserTable
 from sqlalchemy import CHAR, CheckConstraint, DateTime, ForeignKeyConstraint, Index, Integer, Numeric, PrimaryKeyConstraint, String, Text, UniqueConstraint, text
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
@@ -9,7 +10,10 @@ class Base(DeclarativeBase):
     pass
 
 
-class UserProfiles(Base):
+# email, hashed_password, is_active, is_superuser, is_verified come from SQLAlchemyBaseUserTable.
+# ponytail: base declares email as varchar(320)/hashed_password as varchar(1024); DB is 100/255.
+# Only matters for create_all (which we don't run) — runtime maps fine to the existing columns.
+class UserProfiles(SQLAlchemyBaseUserTable[int], Base):
     __tablename__ = 'user_profiles'
     __table_args__ = (
         PrimaryKeyConstraint('id', name='user_profiles_pkey'),
@@ -19,8 +23,6 @@ class UserProfiles(Base):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     username: Mapped[str] = mapped_column(String(50), nullable=False)
-    email: Mapped[str] = mapped_column(String(100), nullable=False)
-    password_hash: Mapped[str] = mapped_column(String(255), nullable=False)
     created_at: Mapped[datetime.datetime] = mapped_column(DateTime(True), nullable=False, server_default=text('now()'))
     updated_at: Mapped[datetime.datetime] = mapped_column(DateTime(True), nullable=False, server_default=text('now()'))
 

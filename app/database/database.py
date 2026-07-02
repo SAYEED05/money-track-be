@@ -2,8 +2,8 @@ import os
 from pathlib import Path
 
 from dotenv import load_dotenv
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker,DeclarativeBase
+from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
+from sqlalchemy.orm import DeclarativeBase
 
 
 load_dotenv(dotenv_path=Path(__file__).resolve().parents[2] / '.env')
@@ -15,17 +15,18 @@ if not db_url:
 
 db_echo = os.getenv('DB_ECHO', 'true').lower() in {'1', 'true', 'yes', 'on'}
 
-engine = create_engine(db_url, echo=db_echo)
+# Normalize DB_URL to the asyncpg driver so an existing psycopg2 URL still works.
+if '+asyncpg' not in db_url:
+    db_url = db_url.replace('+psycopg2', '+asyncpg').replace('postgresql://', 'postgresql+asyncpg://', 1)
 
-SessionLocal = sessionmaker(autoflush=False, autocommit=False, bind=engine)
+engine = create_async_engine(db_url, echo=db_echo)
+
+SessionLocal = async_sessionmaker(engine, expire_on_commit=False)
 
 class Base(DeclarativeBase):
     pass
 
 
-def get_db():
-    db=SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
+async def get_db():
+    async with SessionLocal() as session:
+        yield session

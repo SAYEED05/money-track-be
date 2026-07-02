@@ -1,35 +1,23 @@
-from datetime import datetime
-from pydantic import BaseModel, EmailStr, ConfigDict
+from typing import Optional
+
+from fastapi_users import schemas
+from pydantic import Field
 
 
 # ==========================================================
-# User Schemas
+# User Schemas (fastapi-users) — `username` is added so register/read carry it.
 # ==========================================================
 
-class UserBase(BaseModel):
+class UserRead(schemas.BaseUser[int]):
     username: str
-    email: EmailStr
+    # Required by BaseUser, but kept out of API responses. Flip in the DB or a separate admin API.
+    is_superuser: bool = Field(default=False, exclude=True)
+    is_verified: bool = Field(default=False, exclude=True)
 
 
-class UserResponse(UserBase):
-    id: int
-    created_at: datetime
-    updated_at: datetime
-
-    model_config = ConfigDict(from_attributes=True)
-
-
-class UserSignup(BaseModel):
+class UserCreate(schemas.BaseUserCreate):
     username: str
-    email: EmailStr
-    password: str
 
 
-class UserLogin(BaseModel):
-    email: EmailStr
-    password: str
-
-
-class LoginResponse(BaseModel):
-    access_token: str
-    token_type: str = "bearer"
+class UserUpdate(schemas.BaseUserUpdate):
+    username: Optional[str] = None
